@@ -36,13 +36,6 @@ extern int bpf_set_regs(struct pt_regs *regs, const void *src, u32 src__sz) __ks
 #include "../../include/inode_ugo.bpf.h"
 #include "../../include/skb_frag.bpf.h"
 
-struct {
-	__uint(type, BPF_MAP_TYPE_LRU_HASH);
-	__uint(max_entries, 8192);
-	__type(key, __u64);
-	__type(value, struct pt_regs);
-} aead_entry_regs SEC(".maps");
-
 static __always_inline __u32 current_tgid(void) {
 	return (__u32)(bpf_get_current_pid_tgid() >> 32);
 }
@@ -412,11 +405,6 @@ static __always_inline int rxkad_skip_skb_to_sgvec(struct pt_regs *ctx,
 		return 1;
 	}
 
-	return 0;
-}
-
-SEC("kprobe/rxkad_verify_packet")
-int BPF_KPROBE(hook_rxkad_verify_packet_entry) {
 	return 0;
 }
 

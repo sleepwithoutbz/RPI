@@ -43,7 +43,6 @@ int main(void)
 {
 	struct bpf_object *obj;
 
-	struct bpf_link *rxkad_entry_link = NULL;
 	struct bpf_link *rxkad_call1_link = NULL;
 	struct bpf_link *rxkad_call2_link = NULL;
 
@@ -72,17 +71,9 @@ int main(void)
 		return 1;
 	}
 
-	err = attach_prog(obj, "hook_rxkad_verify_packet_entry", &rxkad_entry_link);
-	if (err)
-	{
-		bpf_object__close(obj);
-		return 1;
-	}
-
 	err = attach_prog(obj, "hook_rxkad_verify_packet_1_skb_to_sgvec", &rxkad_call1_link);
 	if (err)
 	{
-		bpf_link__destroy(rxkad_entry_link);
 		bpf_object__close(obj);
 		return 1;
 	}
@@ -91,12 +82,11 @@ int main(void)
 	if (err)
 	{
 		bpf_link__destroy(rxkad_call1_link);
-		bpf_link__destroy(rxkad_entry_link);
 		bpf_object__close(obj);
 		return 1;
 	}
 
-	printf("attached: rxkad_verify_packet entry, rxkad callsites\n");
+	printf("attached: rxkad_verify_packet_1+0x83, rxkad_verify_packet_2+0x23e\n");
 
 	while (1)
 	{
@@ -105,7 +95,6 @@ int main(void)
 
 	bpf_link__destroy(rxkad_call2_link);
 	bpf_link__destroy(rxkad_call1_link);
-	bpf_link__destroy(rxkad_entry_link);
 
 	bpf_object__close(obj);
 

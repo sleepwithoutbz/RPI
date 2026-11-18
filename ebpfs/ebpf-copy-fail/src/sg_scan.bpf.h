@@ -26,10 +26,12 @@ struct af_alg_tsgl___cf {
     unsigned int cur;
     struct scatterlist sg[];
 } __attribute__((preserve_access_index));
+/* Flavor enum constants too: generated vmlinux.h may already define PGTY_*.
+ * CO-RE matches both type and enumerator names without the ___cf suffix. */
 enum pagetype___cf {
-    PGTY_buddy = 0xf0, PGTY_offline = 0xf1, PGTY_table = 0xf2,
-    PGTY_guard = 0xf3, PGTY_hugetlb = 0xf4, PGTY_slab = 0xf5,
-    PGTY_zsmalloc = 0xf6, PGTY_unaccepted = 0xf7, PGTY_large_kmalloc = 0xf8,
+    PGTY_buddy___cf = 0xf0, PGTY_offline___cf = 0xf1, PGTY_table___cf = 0xf2,
+    PGTY_guard___cf = 0xf3, PGTY_hugetlb___cf = 0xf4, PGTY_slab___cf = 0xf5,
+    PGTY_zsmalloc___cf = 0xf6, PGTY_unaccepted___cf = 0xf7, PGTY_large_kmalloc___cf = 0xf8,
 };
 
 enum cf_phase { CF_RX_SG, CF_TX_NODE, CF_TX_SG, CF_PAGE, CF_DONE };
@@ -115,11 +117,11 @@ __noinline int cf_check_page(struct cf_scan *s)
     }
     if (BPF_CORE_READ_INTO(&page_type, page, page_type)) return CF_READ_ERROR;
     page_type >>= 24;
-    if (page_type == bpf_core_enum_value(enum pagetype___cf, PGTY_slab) ||
-        page_type == bpf_core_enum_value(enum pagetype___cf, PGTY_large_kmalloc))
+    if (page_type == bpf_core_enum_value(enum pagetype___cf, PGTY_slab___cf) ||
+        page_type == bpf_core_enum_value(enum pagetype___cf, PGTY_large_kmalloc___cf))
         return CF_OK; /* Kernel buffers, not file page cache. */
     if (page_type >= 0xf0 && page_type != 0xff &&
-        page_type != bpf_core_enum_value(enum pagetype___cf, PGTY_hugetlb))
+        page_type != bpf_core_enum_value(enum pagetype___cf, PGTY_hugetlb___cf))
         return CF_BAD_STRUCTURE;
     if (BPF_CORE_READ_INTO(&mapping_raw, page, mapping)) return CF_READ_ERROR;
     if (!mapping_raw || (mapping_raw & CF_MAPPING_FLAGS))

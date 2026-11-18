@@ -15,30 +15,6 @@ static int libbpf_log_fn(enum libbpf_print_level level, const char *format, va_l
 	return vfprintf(stderr, format, args);
 }
 
-static int attach_prog(struct bpf_object *obj, const char *prog_name, struct bpf_link **link)
-{
-	struct bpf_program *prog;
-	int err;
-
-	prog = bpf_object__find_program_by_name(obj, prog_name);
-	if (!prog)
-	{
-		fprintf(stderr, "program not found: %s\n", prog_name);
-		return -ENOENT;
-	}
-
-	*link = bpf_program__attach(prog);
-	err = libbpf_get_error(*link);
-	if (err)
-	{
-		*link = NULL;
-		fprintf(stderr, "attach failed: %s: %s\n", prog_name, strerror(-err));
-		return err;
-	}
-
-	return 0;
-}
-
 static int attach_kprobe_site(struct bpf_object *obj, const char *prog_name,
 			      const char *func_name, size_t offset,
 			      struct bpf_link **link)

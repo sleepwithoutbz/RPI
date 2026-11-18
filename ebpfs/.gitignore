@@ -1,3 +1,4 @@
 *_hook
 *_hook.bpf.o
 vmlinux.h
+*.log

@@ -1,0 +1,9 @@
+# Page taint sources for the 5 page-attack CVEs
+# Format: <func_name> <type> <user_arg_indices separated by _>
+# These entries designate callback parameters that should be treated as sources.
+
+aead_recvmsg MY_IOCTL 0
+esp_input MY_IOCTL 1
+esp_input_tail MY_IOCTL 1
+rxgk_verify_packet MY_IOCTL 1
+rxkad_verify_packet MY_IOCTL 1

@@ -34,13 +34,6 @@ extern int bpf_skip_call(struct pt_regs *regs, unsigned long retval,
 #include "../../include/inode_ugo.bpf.h"
 #include "../../include/skb_frag.bpf.h"
 
-struct {
-	__uint(type, BPF_MAP_TYPE_LRU_HASH);
-	__uint(max_entries, 8192);
-	__type(key, __u64);
-	__type(value, struct pt_regs);
-} aead_entry_regs SEC(".maps");
-
 #if 0
 /* Disabled iov_iter experiment helpers; not used by active hooks. */
 struct vma_perm_ctx {

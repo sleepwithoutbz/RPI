@@ -1,27 +1,12 @@
 CLANG ?= clang
 ARCH ?= $(shell uname -m)
 
-ifeq ($(ARCH),x86_64)
-TARGET_ARCH := x86
-else ifeq ($(ARCH),aarch64)
-TARGET_ARCH := arm64
-else ifeq ($(ARCH),arm64)
-TARGET_ARCH := arm64
-else ifeq ($(ARCH),s390x)
-TARGET_ARCH := s390
-else ifeq ($(ARCH),ppc64le)
-TARGET_ARCH := powerpc
-else ifeq ($(ARCH),mips)
-TARGET_ARCH := mips
-else ifeq ($(ARCH),mips64)
-TARGET_ARCH := mips
-else ifeq ($(ARCH),riscv64)
-TARGET_ARCH := riscv
-else ifeq ($(ARCH),loongarch64)
-TARGET_ARCH := loongarch
-else
-$(error Unsupported ARCH '$(ARCH)'; set ARCH=<uname -m> or TARGET_ARCH=<libbpf arch>)
+ifneq ($(ARCH),x86_64)
+$(error These guards require the evaluated x86-64 kernel/module build)
 endif
+TARGET_ARCH := x86
+
+.PHONY: all bpf user clean
 
 BPF_CFLAGS := \
     -O2 \
@@ -32,10 +17,14 @@ BPF_CFLAGS := \
 
 all: bpf user
 
-bpf:
+bpf: src/vmlinux.h
 	$(CLANG) $(BPF_CFLAGS) \
 	-c src/dirty_frag_hook.bpf.c \
 	-o dirty_frag_esp_hook.bpf.o
+
+src/vmlinux.h:
+	@echo "Generate headers first: make -C .. headers" >&2
+	@exit 1
 
 user:
 	gcc src/dirty_frag_hook.c \

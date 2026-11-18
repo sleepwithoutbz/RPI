@@ -44,12 +44,9 @@ int main(void)
 	struct bpf_object *obj;
 
 	struct bpf_link *esp_input_entry_link = NULL;
-	struct bpf_link *esp_input_pull_tail_link = NULL;
 	struct bpf_link *esp_input_crypto_decrypt_link = NULL;
 	struct bpf_link *esp_done2_entry_link = NULL;
 	struct bpf_link *esp_done2_copy_bits_link = NULL;
-	struct bpf_link *esp_done_esn_entry_link = NULL;
-	struct bpf_link *esp_done_esn_restore_link = NULL;
 
 	int err;
 
@@ -83,18 +80,9 @@ int main(void)
 		return 1;
 	}
 
-	err = attach_prog(obj, "hook_esp_input_pull_tail", &esp_input_pull_tail_link);
-	if (err)
-	{
-		bpf_link__destroy(esp_input_entry_link);
-		bpf_object__close(obj);
-		return 1;
-	}
-
 	err = attach_prog(obj, "hook_esp_input_crypto_decrypt", &esp_input_crypto_decrypt_link);
 	if (err)
 	{
-		bpf_link__destroy(esp_input_pull_tail_link);
 		bpf_link__destroy(esp_input_entry_link);
 		bpf_object__close(obj);
 		return 1;
@@ -104,7 +92,6 @@ int main(void)
 	if (err)
 	{
 		bpf_link__destroy(esp_input_crypto_decrypt_link);
-		bpf_link__destroy(esp_input_pull_tail_link);
 		bpf_link__destroy(esp_input_entry_link);
 		bpf_object__close(obj);
 		return 1;
@@ -115,36 +102,21 @@ int main(void)
 	{
 		bpf_link__destroy(esp_done2_entry_link);
 		bpf_link__destroy(esp_input_crypto_decrypt_link);
-		bpf_link__destroy(esp_input_pull_tail_link);
 		bpf_link__destroy(esp_input_entry_link);
 		bpf_object__close(obj);
 		return 1;
 	}
 
-	// err = attach_prog(obj, "hook_esp_input_done_esn_restore_header", &esp_done_esn_restore_link);
-	// if (err)
-	// {
-	// 	bpf_link__destroy(esp_done2_copy_bits_link);
-	// 	bpf_link__destroy(esp_done2_entry_link);
-	// 	bpf_link__destroy(esp_input_crypto_decrypt_link);
-	// 	bpf_link__destroy(esp_input_pull_tail_link);
-	// 	bpf_link__destroy(esp_input_entry_link);
-	// 	bpf_object__close(obj);
-	// 	return 1;
-	// }
-
-	printf("attached: esp_input, esp_input+0x305, esp_input+0x1e4, esp_input_done2, esp_input_done2+0x110, esp_input_done_esn+0x5\n");
+	printf("attached: esp_input, esp_input+0x1e4, esp_input_done2, esp_input_done2+0x110\n");
 
 	while (1)
 	{
 		sleep(1);
 	}
 
-	// bpf_link__destroy(esp_done_esn_restore_link);
 	bpf_link__destroy(esp_done2_copy_bits_link);
 	bpf_link__destroy(esp_done2_entry_link);
 	bpf_link__destroy(esp_input_crypto_decrypt_link);
-	bpf_link__destroy(esp_input_pull_tail_link);
 	bpf_link__destroy(esp_input_entry_link);
 
 	bpf_object__close(obj);
