@@ -1,23 +1,40 @@
 # RPI
 
 This repository accompanies **Rapid-Deployment Runtime Defense for Linux
-Page-Cache Integrity**. It contains the experimental Linux kernel, the eBPF
-defense implementations, public exploit examples, and macrobenchmark scripts.
+Page-Cache Integrity**. It contains the modified Linux kernel source files,
+the eBPF defense implementations, the SUTURE static analysis code, public
+exploit examples, and macrobenchmark scripts.
 
 ## Contents
 
 | Directory | Contents |
 | --- | --- |
-| `linux-6.17/` | Linux 6.17 source used for the experiments, including the required eBPF extensions. |
+| `linux-6.17/` | Three modified source files for the experimental kernel's eBPF extensions, organized by their paths in upstream Linux v6.17. |
 | `ebpfs/` | eBPF defenses for Copy Fail, Dirty Frag (ESP and RXRPC), DirtyDecrypt, and Fragnesia, with shared permission-checking code. |
+| `SUTURE/` | LLVM-based static analysis used to track page references and identify candidate page-write sites. |
 | `cve/` | Public exploit examples and references to their upstream sources. |
 | `macro_test/` | Macrobenchmark configuration and scripts based on the **Phoronix Test Suite (PTS)**. |
 
+## Prepare the experimental kernel
+
+The experimental kernel is based on the official Linux `v6.17` tag. Copy the
+three files in `linux-6.17/` into a fresh upstream checkout, preserving their
+relative paths. Run these commands from the artifact repository root, then
+build the modified kernel for the experimental VM.
+
+```sh
+git clone --depth 1 --branch v6.17 \
+  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git \
+  ../linux-v6.17-rpi
+cp -R linux-6.17/. ../linux-v6.17-rpi/
+```
+
 ## Build the defenses
 
-Use an isolated x86-64 experimental VM running the supplied modified kernel.
-The guards use build-specific instruction offsets; CO-RE does not make these
-offsets portable to other kernel or module builds.
+Use an isolated x86-64 experimental VM running the modified kernel with kernel
+and module BTF enabled. The guards use instruction offsets specific to the
+evaluated kernel and module builds. Verify the offsets against your build
+before loading the guards.
 
 Install GCC, Make, Clang, libbpf development headers, and
 [bpftool](https://github.com/libbpf/bpftool). With `bpftool` on `PATH`, run from
@@ -44,6 +61,13 @@ sudo ./copy_fail_hook
 The loader reports successful attachment and stays running to keep the hooks
 active. Stop it with Ctrl-C. The current authorization policy checks the hook
 task's credentials against inode U/G/O permission bits.
+
+## Static analysis
+
+The included SUTURE extension analyzes LLVM bitcode to trace page references
+from configured entry points and report candidate page-write sites for manual
+review. See the [SUTURE README](SUTURE/README.md) for setup, build, and input
+format instructions.
 
 ## Macrobenchmarks
 
